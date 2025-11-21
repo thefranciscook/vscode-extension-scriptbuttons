@@ -19,17 +19,8 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "scriptButtonsContainer",
-          "title": "Script Buttons",
-          "icon": "$(terminal)"
-        }
-      ]
-    },
     "views": {
-      "scriptButtonsContainer": [
+      "explorer": [
         {
           "id": "scriptButtons",
           "name": "Script Buttons"
