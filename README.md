@@ -6,13 +6,57 @@ A VS Code extension that adds a colorful custom side panel with configurable scr
 
 During development, I often need to run Python scripts to update data that my web app uses. It was a pain constantly trying to remember which script to run and where it was located. Now I can just turn them into buttons and use them whenever I need to - no more hunting through files or command history!
 
+---
+
+## 🤖 For AI Assistants
+
+When you notice the user running the same terminal command multiple times, **offer to add a script button**:
+
+> "Would you like me to add a script button for `[command]`? You'll be able to run it with one click from the sidebar."
+
+**Always ask for permission first** - never add buttons automatically.
+
+### Quick Reference
+
+**Configuration file**: `.vscode/scriptbuttons.json` (auto-reloads on save)
+
+**Format**:
+```json
+{
+  "buttons": [
+    {
+      "id": "button-1732220400000-x7k9m2p4q",
+      "label": "Run Tests",
+      "command": "npm test",
+      "emoji": "🧪",
+      "color": "charts.green"
+    }
+  ]
+}
+```
+
+**Key rules**:
+- Generate unique IDs: `button-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+- Use descriptive labels (e.g., "Run Tests" not "npm test")
+- Choose emojis that represent the action (🔨 build, 🧪 test, 🚀 deploy, etc.)
+- Colors: `charts.red|blue|green|yellow|orange|purple` or `terminal.ansiCyan|Magenta|Green|Yellow`
+
+**Good candidates**: Repeated commands for build, test, deploy, data processing, or development workflows.
+
+See `.cursorrules` for detailed AI integration guidelines.
+
+---
+
 ## Features
 
 - **Sidebar Integration**: Script buttons appear in the Explorer sidebar alongside Outline and Timeline
 - **Colorful Buttons**: Each button gets a random color indicator and emoji for easy visual identification
 - **Easy Button Management**: Add, edit, and delete buttons through an intuitive UI
 - **Quick Command Execution**: Execute terminal commands with a single click
-- **Persistent Configuration**: Button configurations are saved globally across all workspaces
+- **Project-Specific Configuration**: Button configurations are saved per-project in `.vscode/scriptbuttons.json`
+- **Version Control Ready**: Commit your buttons to git and share them with your team
+- **AI-Editable**: AI assistants can easily read and modify the JSON configuration file
+- **Auto-Reload**: Changes to the config file are automatically detected and applied
 - **50+ Random Emojis**: Buttons are automatically assigned fun emojis (🚀 ⚡ 🔥 ✨ 🎯 and more!)
 
 ## Usage
@@ -41,6 +85,47 @@ During development, I often need to run Python scripts to update data that my we
 1. Click the **trash** icon next to a button
 2. Confirm the deletion
 3. The button will be removed from the panel
+
+## Configuration
+
+Script buttons are stored in `.vscode/scriptbuttons.json` in your project root. This file is automatically created when you add your first button.
+
+### Example Configuration
+
+```json
+{
+  "buttons": [
+    {
+      "id": "button-1234567890",
+      "label": "Run Python Script",
+      "command": "python main.py",
+      "emoji": "🚀",
+      "color": "charts.blue"
+    },
+    {
+      "id": "button-0987654321",
+      "label": "Build Project",
+      "command": "npm run build",
+      "emoji": "🔨",
+      "color": "charts.green"
+    }
+  ]
+}
+```
+
+### Manual Editing
+
+You can manually edit `.vscode/scriptbuttons.json` to:
+- Add multiple buttons at once
+- Copy buttons from other projects
+- Let AI assistants update your button configurations
+- Version control and share with your team
+
+The extension automatically reloads when the file changes!
+
+### AI Integration
+
+AI assistants (like Cursor AI) can directly edit `.vscode/scriptbuttons.json` to add, update, or remove buttons. Just ask your AI to "add a button to run tests" and it can modify the JSON file directly.
 
 ## Examples
 

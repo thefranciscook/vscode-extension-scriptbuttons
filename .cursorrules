@@ -1,0 +1,119 @@
+# Project AI Instructions
+
+## Script Buttons Extension
+
+This project uses the **Script Buttons** VS Code extension for managing frequently-used terminal commands.
+
+### When to Suggest Script Buttons
+
+**Detect opportunities** to suggest adding a script button when:
+- User runs the same terminal command multiple times in conversation
+- User mentions "I often run..." or "I frequently need to..."
+- Setting up development workflows (build, test, deploy, etc.)
+- Creating data processing or maintenance scripts
+- Establishing CI/CD or deployment commands
+- Any command that would benefit from one-click execution
+
+**DON'T add buttons automatically** - Always ask first:
+> "Would you like me to add a script button for this command? It'll give you one-click access from the sidebar."
+
+### How to Add Buttons
+
+**Configuration file**: `.vscode/scriptbuttons.json`
+
+**Process**:
+1. Ask user: "Would you like to add a script button for `[command]`?"
+2. If yes, suggest a descriptive label (let user confirm/modify)
+3. Read existing `.vscode/scriptbuttons.json` (or create if missing)
+4. Add new button to the array
+5. Save file (extension auto-reloads)
+
+**File format**:
+```json
+{
+  "buttons": [
+    {
+      "id": "button-TIMESTAMP-RANDOM9CHARS",
+      "label": "Descriptive Label",
+      "command": "actual terminal command",
+      "emoji": "🚀",
+      "color": "charts.blue"
+    }
+  ]
+}
+```
+
+**ID generation**: `button-${Date.now()}-${randomString(9)}`
+- Example: `button-1732220400000-x7k9m2p4q`
+
+**Available colors**:
+- `charts.red` - Errors, stop, danger
+- `charts.blue` - Build, compile, general
+- `charts.green` - Tests, success, start
+- `charts.yellow` - Warnings, staging
+- `charts.orange` - Deploy, important
+- `charts.purple` - Database, special
+- `terminal.ansiCyan` - Info, utility
+- `terminal.ansiMagenta` - Media, creative
+- `terminal.ansiGreen` - Environment, dev
+- `terminal.ansiYellow` - Warnings, caution
+
+**Suggested emojis by category**:
+- Build: 🔨 🏗️ ⚙️ 🛠️
+- Test: 🧪 ✅ 🔍 ✓
+- Deploy: 🚀 📦 🌐 ☁️
+- Start/Run: ▶️ 🏃 ⚡ 💨
+- Stop: ⏹️ 🛑 ❌
+- Database: 🗄️ 💾 🔐
+- Git: 🌿 📝 🔀
+- Python: 🐍 🎯
+- Docker: 🐳 📦
+- General: 🎨 ✨ 🔥 💡 ⭐
+
+### Best Practices
+
+**Good button candidates**:
+- `npm run build` → "Build Project" 🔨
+- `npm test` → "Run Tests" 🧪
+- `python scripts/update_data.py` → "Update Data" 🔄
+- `docker-compose up -d` → "Start Services" 🐳
+- `git status` → "Git Status" 🌿
+
+**Don't create buttons for**:
+- One-time setup commands
+- Commands the user only ran once
+- Commands that need frequent argument changes
+- Highly destructive commands without safeguards
+
+### Example Interaction
+
+```
+User: "I need to run python scripts/process_data.py every time I update the database"
+
+AI: "Would you like me to add a script button for that command? 
+You'll be able to run it with one click from the sidebar. 
+What label would you like? (Suggested: 'Process Database')"
+
+User: "Yes, that works"
+
+AI: [Creates/updates .vscode/scriptbuttons.json]
+"✅ Added 'Process Database' button. You'll see it in the Script Buttons 
+panel in your sidebar!"
+```
+
+### File Structure
+
+```
+.vscode/
+  └── scriptbuttons.json    ← Button configurations (auto-reloads)
+```
+
+### Important Notes
+
+- ✅ Always ASK before adding buttons
+- ✅ Suggest descriptive, action-oriented labels
+- ✅ Choose emojis that match the command purpose
+- ✅ The extension auto-reloads when the file changes
+- ✅ Buttons are project-specific and can be committed to git
+- ⚠️ Create `.vscode/` directory if it doesn't exist
+- ⚠️ Preserve existing buttons when adding new ones

@@ -1,11 +1,14 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
 import { ScriptButton } from './types';
 
 /**
  * Manages script button storage and CRUD operations
  */
 export class ButtonManager {
-  private static readonly STORAGE_KEY = 'scriptButtons';
+  private static readonly CONFIG_DIR = '.vscode';
+  private static readonly CONFIG_FILE = 'scriptbuttons.json';
   private buttons: ScriptButton[] = [];
   private context: vscode.ExtensionContext;
   private _onDidChangeButtons = new vscode.EventEmitter<void>();
@@ -32,31 +35,129 @@ export class ButtonManager {
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
     this.loadButtons();
+    this.setupFileWatcher();
+  }
+
+  /**
+   * Setup file watcher to reload buttons when file changes
+   */
+  private setupFileWatcher(): void {
+    const configPath = this.getConfigPath();
+    if (!configPath) {
+      return;
+    }
+
+    // Watch for changes to the config file
+    const watcher = vscode.workspace.createFileSystemWatcher(configPath);
+    
+    watcher.onDidChange(() => {
+      this.loadButtons();
+      this._onDidChangeButtons.fire();
+    });
+    
+    watcher.onDidCreate(() => {
+      this.loadButtons();
+      this._onDidChangeButtons.fire();
+    });
+    
+    watcher.onDidDelete(() => {
+      this.buttons = [];
+      this._onDidChangeButtons.fire();
+    });
+
+    this.context.subscriptions.push(watcher);
+  }
+
+  /**
+   * Get the path to the config file
+   */
+  private getConfigPath(): string | null {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      return null;
+    }
+    return path.join(workspaceFolder.uri.fsPath, ButtonManager.CONFIG_DIR, ButtonManager.CONFIG_FILE);
+  }
+
+  /**
+   * Ensure the .vscode directory exists
+   */
+  private ensureConfigDir(): string | null {
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      return null;
+    }
+    
+    const configDir = path.join(workspaceFolder.uri.fsPath, ButtonManager.CONFIG_DIR);
+    if (!fs.existsSync(configDir)) {
+      fs.mkdirSync(configDir, { recursive: true });
+    }
+    
+    return configDir;
   }
 
   /**
    * Load buttons from storage
    */
   private loadButtons(): void {
-    const stored = this.context.globalState.get<ScriptButton[]>(ButtonManager.STORAGE_KEY);
-    this.buttons = stored || [];
-    
-    // Migrate old buttons without emoji/color
-    let needsSave = false;
-    this.buttons = this.buttons.map(button => {
-      if (!button.emoji || !button.color) {
-        needsSave = true;
-        return {
-          ...button,
-          emoji: button.emoji || this.getRandomEmoji(),
-          color: button.color || this.getRandomColor()
-        };
+    const configPath = this.getConfigPath();
+    if (!configPath) {
+      this.buttons = [];
+      return;
+    }
+
+    try {
+      if (fs.existsSync(configPath)) {
+        const content = fs.readFileSync(configPath, 'utf8');
+        const data = JSON.parse(content);
+        this.buttons = data.buttons || [];
+        
+        // Migrate old buttons without emoji/color
+        let needsSave = false;
+        this.buttons = this.buttons.map(button => {
+          if (!button.emoji || !button.color) {
+            needsSave = true;
+            return {
+              ...button,
+              emoji: button.emoji || this.getRandomEmoji(),
+              color: button.color || this.getRandomColor()
+            };
+          }
+          return button;
+        });
+        
+        if (needsSave) {
+          this.saveButtonsSync();
+        }
+      } else {
+        this.buttons = [];
       }
-      return button;
-    });
-    
-    if (needsSave) {
-      this.context.globalState.update(ButtonManager.STORAGE_KEY, this.buttons);
+    } catch (error) {
+      console.error('Error loading script buttons:', error);
+      vscode.window.showErrorMessage('Failed to load script buttons configuration');
+      this.buttons = [];
+    }
+  }
+
+  /**
+   * Save buttons to storage (synchronous)
+   */
+  private saveButtonsSync(): void {
+    const configPath = this.getConfigPath();
+    if (!configPath) {
+      vscode.window.showWarningMessage('No workspace folder open. Cannot save script buttons.');
+      return;
+    }
+
+    try {
+      this.ensureConfigDir();
+      const data = {
+        buttons: this.buttons
+      };
+      fs.writeFileSync(configPath, JSON.stringify(data, null, 2), 'utf8');
+    } catch (error) {
+      console.error('Error saving script buttons:', error);
+      vscode.window.showErrorMessage('Failed to save script buttons configuration');
     }
   }
 
@@ -64,8 +165,23 @@ export class ButtonManager {
    * Save buttons to storage
    */
   private async saveButtons(): Promise<void> {
-    await this.context.globalState.update(ButtonManager.STORAGE_KEY, this.buttons);
-    this._onDidChangeButtons.fire();
+    const configPath = this.getConfigPath();
+    if (!configPath) {
+      vscode.window.showWarningMessage('No workspace folder open. Cannot save script buttons.');
+      return;
+    }
+
+    try {
+      this.ensureConfigDir();
+      const data = {
+        buttons: this.buttons
+      };
+      await fs.promises.writeFile(configPath, JSON.stringify(data, null, 2), 'utf8');
+      this._onDidChangeButtons.fire();
+    } catch (error) {
+      console.error('Error saving script buttons:', error);
+      vscode.window.showErrorMessage('Failed to save script buttons configuration');
+    }
   }
 
   /**
