@@ -1,0 +1,104 @@
+{
+  "name": "script-buttons",
+  "displayName": "Script Buttons",
+  "description": "Add custom script buttons to the sidebar for quick command execution",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thefranciscook/vscode-extension-scriptbuttons"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onView:scriptButtons"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "scriptButtonsContainer",
+          "title": "Script Buttons",
+          "icon": "$(terminal)"
+        }
+      ]
+    },
+    "views": {
+      "scriptButtonsContainer": [
+        {
+          "id": "scriptButtons",
+          "name": "Script Buttons"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "scriptButtons.addButton",
+        "title": "Add Button",
+        "icon": "$(add)"
+      },
+      {
+        "command": "scriptButtons.editButton",
+        "title": "Edit Button",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "scriptButtons.deleteButton",
+        "title": "Delete Button",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "scriptButtons.executeButton",
+        "title": "Execute Command"
+      },
+      {
+        "command": "scriptButtons.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "scriptButtons.addButton",
+          "when": "view == scriptButtons",
+          "group": "navigation"
+        },
+        {
+          "command": "scriptButtons.refresh",
+          "when": "view == scriptButtons",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "scriptButtons.editButton",
+          "when": "view == scriptButtons && viewItem == scriptButton",
+          "group": "inline"
+        },
+        {
+          "command": "scriptButtons.deleteButton",
+          "when": "view == scriptButtons && viewItem == scriptButton",
+          "group": "inline"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.80.0",
+    "typescript": "^5.0.0"
+  }
+}
+
